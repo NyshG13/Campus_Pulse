@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "./config";
-import type { FeedResponse, Post } from "./types";
+import type { Post } from "./types";
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -21,18 +21,25 @@ export async function getFeed(): Promise<Post[]> {
   return apiFetch<Post[]>("/api/v1/posts/");
 }
 
-
-export async function createPost(content: string): Promise<Post> {
+// Now requires deviceHash to be passed in
+export async function createPost(content: string, deviceHash: string): Promise<Post> {
   return apiFetch<Post>("/api/v1/posts/", {
     method: "POST",
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, device_hash: deviceHash }),
   });
 }
 
-export async function upvotePost(id: string): Promise<Post> {
-  return apiFetch<Post>(`/posts/${id}/upvote`, { method: "POST" });
+// Voting endpoints: leave as stubs or implement later to match backend schema
+export async function upvotePost(postId: string, deviceHash: string): Promise<any> {
+  return apiFetch<any>("/api/v1/votes/", {
+    method: "POST",
+    body: JSON.stringify({ post_id: postId, device_hash: deviceHash, value: 1 }),
+  });
 }
 
-export async function downvotePost(id: string): Promise<Post> {
-  return apiFetch<Post>(`/posts/${id}/downvote`, { method: "POST" });
+export async function downvotePost(postId: string, deviceHash: string): Promise<any> {
+  return apiFetch<any>("/api/v1/votes/", {
+    method: "POST",
+    body: JSON.stringify({ post_id: postId, device_hash: deviceHash, value: -1 }),
+  });
 }

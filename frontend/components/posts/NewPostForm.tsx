@@ -4,6 +4,34 @@ import { useState, FormEvent } from "react";
 import { createPost } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
+/**
+ * Returns a stable device hash stored in localStorage.
+ * Safely handles environments without localStorage or crypto.randomUUID.
+ */
+function getDeviceHash(): string {
+  try {
+    const key = "device_hash";
+    // ensure h is a string (never null)
+    let h = localStorage.getItem(key) ?? "";
+
+    if (!h) {
+      if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+        h = (crypto as any).randomUUID();
+      } else {
+        h = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+      localStorage.setItem(key, h);
+    }
+
+    return h;
+  } catch (e) {
+    // localStorage may be unavailable (e.g., private mode). produce a transient id.
+    return (typeof crypto !== "undefined" && "randomUUID" in crypto)
+      ? (crypto as any).randomUUID()
+      : Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+}
+
 export default function NewPostForm() {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,13 +45,19 @@ export default function NewPostForm() {
     setSubmitting(true);
     setError(null);
 
+    const deviceHash = getDeviceHash();
+
     try {
-      await createPost(content.trim());
+      await createPost(content.trim(), deviceHash);
       setContent("");
       router.push("/feed");
-    } catch (e) {
-      console.error(e);
-      setError("Failed to submit post. Try again.");
+    } catch (err: any) {
+      console.error(err);
+      setError(
+        typeof err?.message === "string" && err.message.includes("422")
+          ? "Failed: required fields missing on server."
+          : "Failed to submit post. Try again."
+      );
     } finally {
       setSubmitting(false);
     }

@@ -5,6 +5,7 @@ from backend.config import settings
 from backend.database.base import Base
 from backend.database.session import engine
 from backend.routes import posts, votes
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def create_tables():
@@ -13,6 +14,19 @@ def create_tables():
 
 def get_application() -> FastAPI:
     app = FastAPI(title=settings.PROJECT_NAME)
+
+    origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    ]
+
+    app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,        # allow these origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    )
 
     app.include_router(posts.router, prefix=settings.API_V1_STR)
     app.include_router(votes.router, prefix=settings.API_V1_STR)

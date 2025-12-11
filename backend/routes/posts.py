@@ -25,6 +25,9 @@ from backend.database.models.user import User
 from backend.database.models.sentiment import Sentiment
 from backend.schemas.post import PostCreate, PostOut
 from backend.services.sentiment_service import analyze_text
+from sqlalchemy import func
+from backend.database.models.vote import Vote
+
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
@@ -79,6 +82,7 @@ def create_post(payload: PostCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=list[PostOut])
 def list_posts(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+    # 1) load posts (paged)
     posts = (
         db.query(Post)
         .order_by(Post.created_at.desc())
@@ -86,4 +90,25 @@ def list_posts(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
         .limit(limit)
         .all()
     )
+
+    if not posts:
+        return posts
+
+    # 2) aggregate vote values for all posts in one query (sum of Vote.value)
+    post_ids = [p.id for p in posts]
+    agg = (
+        db.query(Vote.post_id, func.coalesce(func.sum(Vote.value), 0).label("score"))
+        .filter(Vote.post_id.in_(post_ids))
+        .group_by(Vote.post_id)
+        .all()
+    )
+    # agg is list of tuples: (post_id, score)
+    score_map = {row.post_id: int(row.score) for row in agg}
+
+    # 3) attach computed score to each Post instance (so response uses up-to-date values)
+    for p in posts:
+        # if no votes found, default to 0
+        p.score = score_map.get(p.id, 0)
+
     return posts
+
