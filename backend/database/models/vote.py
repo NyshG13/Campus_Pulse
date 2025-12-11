@@ -1,3 +1,4 @@
+#structure of vote table in database. contains user_id, post_id, created_at, upvote/downvote, vote_counts for each post id
 import uuid
 from datetime import datetime
 

@@ -1,3 +1,4 @@
+#Ensures vote requests are valid and formatted correctly.
 from uuid import UUID
 from datetime import datetime
 

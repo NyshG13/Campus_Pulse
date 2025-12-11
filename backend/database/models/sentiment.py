@@ -1,3 +1,9 @@
+#this is just a database structure that we have defined. 
+# Whenever we get a post and we want to store the sentiment, this is how it will be stored in database, this file just defines the structure, doesnt run the model
+#that is done in router file
+#Defines how you store sentiment analysis results in the database.
+
+
 import uuid
 from datetime import datetime
 

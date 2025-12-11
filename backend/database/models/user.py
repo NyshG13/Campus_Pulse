@@ -1,3 +1,4 @@
+#to store the user in the database - like their id, password hash etc
 import uuid
 from datetime import datetime
 

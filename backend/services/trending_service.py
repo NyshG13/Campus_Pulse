@@ -1,6 +1,8 @@
+#calculates the trending score of each post by counting total vote counts + recency of post+ sentiments etc.
+
 from datetime import datetime, timedelta
 
-from app.db.models.post import Post
+from backend.database.models.post import Post
 
 
 def compute_trending_score(post: Post) -> int:

@@ -1,3 +1,5 @@
+#to let api talk to database 
+#every time there is a request, this 'engine' is used to connect to database 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

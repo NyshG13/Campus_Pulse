@@ -1,3 +1,6 @@
+#Validates user login/register data and protects sensitive info (like password).
+#email must be valid, password must be valid (must contain caps, numbers etc)
+#We don’t want the backend to send the password in the response even if the frontend requests it. Schemas are the rule-book that ensures only allowed fields are sent.
 from uuid import UUID
 from datetime import datetime
 

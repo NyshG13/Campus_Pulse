@@ -1,3 +1,14 @@
+# Defines the Post table in the database – each row is one anonymous post / confession / message on Campus Pulse.
+#this also defines the structure of a post, not a post itself - all these files are just about how different things will be stored in database
+# What it usually contains: id (post ID), title / content, created_at, owner_id (which user posted it, if you track that)
+
+# What part of the website it affects:
+# Any API endpoint in /docs that works with posts, e.g.:
+# GET /api/v1/posts – list posts
+# POST /api/v1/posts – create a post
+# GET /api/v1/posts/{id} – get a single post
+# The shape of stored posts in the DB, and indirectly what data your frontend will show for each post.
+
 import uuid
 from datetime import datetime
 

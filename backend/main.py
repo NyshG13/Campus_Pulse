@@ -1,3 +1,4 @@
+# glues together config, DB, and routes, and exposes the app that handles every request.
 from fastapi import FastAPI
 
 from backend.config import settings

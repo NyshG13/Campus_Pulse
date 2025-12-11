@@ -1,3 +1,21 @@
+#models define what exists, routes define what users are allowed to do with those things 
+#contains a list of all the actions people can do with posts- create, delete, view 1 post, view all posts 
+# it takes the user input and update the database accordingly, decides which function to call to update and work on that request 
+# Example 1: Creating a post
+# User clicks “Submit Post” in frontend.
+# Frontend sends a request to backend: POST /api/v1/posts
+# routes/post.py receives that request. It validates the data (e.g. using Pydantic schemas).
+# It creates a new row in the Post table.
+# Database stores it.
+# Backend responds with JSON:
+# {
+#   "id": 42,
+#   "content": "Hostel food sucks ",
+#   "created_at": "..."
+# }
+# Frontend displays it.
+
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 

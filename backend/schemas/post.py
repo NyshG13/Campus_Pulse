@@ -1,3 +1,6 @@
+#schema ensures that only valid post data enters from the frontend, and valid data goes out from backend. 
+#Controls what data a post must contain when created or returned.
+#ensures backend sends the data in correct/clean way. 
 from uuid import UUID
 from datetime import datetime
 

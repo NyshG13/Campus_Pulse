@@ -1,3 +1,4 @@
+#this calls the model, does the calculations and updates the predictions in database using model/sentiments. 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 analyzer = SentimentIntensityAnalyzer()

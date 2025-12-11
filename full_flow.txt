@@ -1,0 +1,39 @@
+Typical request flow:
+
+User action (frontend)
+→ hits a route (routes/post.py or some trending route)
+
+Route calls a service function:
+
+sentiment_service.analyze_post(...)
+trending_service.get_trending_posts(...)
+
+Service talks to:
+
+database models (Post, Vote, Sentiment)
+maybe ML models
+
+Service returns processed data to route
+
+Route uses schemas to format response
+
+Response sent back to frontend → shown on UI
+
+# flow -
+🔻 FRONTEND (request)
+        ↓
+🔻 ROUTE (decides what operation to run, which part of backend responds to that request)
+        ↓
+🔻 SCHEMA (validates & cleans input)
+        ↓
+🔻 SERVICE (business logic / ML / trending logic)
+        ↓
+🔻 DATABASE (read/write/update)
+        ↓
+🔻 SERVICE (returns processed result)
+        ↓
+🔻 SCHEMA (formats safe response => hides sensitive data)
+        ↓
+🔻 ROUTE (sends final response)
+        ↓
+🔻 FRONTEND (display to user)

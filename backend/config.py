@@ -1,6 +1,7 @@
 #env vars are loaded, project constants are called, 
 #API keys, secret keys are managed 
 #to configure global application settings 
+#Controls how your app is configured – project name, prefix /api/v1, DB URL, etc. Changing this changes how your app behaves globally.
 
 import os 
 from dotenv import load_dotenv 

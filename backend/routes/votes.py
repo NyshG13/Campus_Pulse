@@ -1,3 +1,17 @@
+#Example 2 - Upvoting a post
+# User presses 👍 on a post.
+# Frontend sends:
+# POST /api/v1/votes
+# {
+#   "post_id": 42,
+#   "direction": 1
+# }
+# routes/vote.py checks if the user already voted.
+# If not → add a row to Vote table.
+# If yes → update/remove it.
+# Backend responds with updated count or status: { "message": "Vote registered", "total_votes": 17 }
+# Frontend updates the UI (vote count increases).
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
