@@ -97,18 +97,32 @@ def list_posts(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
     # 2) aggregate vote values for all posts in one query (sum of Vote.value)
     post_ids = [p.id for p in posts]
     agg = (
-        db.query(Vote.post_id, func.coalesce(func.sum(Vote.value), 0).label("score"))
+        db.query(
+            Vote.post_id,
+            func.coalesce(func.sum(Vote.value), 0).label("score"),
+            func.count().filter(Vote.value == 1).label("upvotes"),
+            func.count().filter(Vote.value == -1).label("downvotes"),
+        )
         .filter(Vote.post_id.in_(post_ids))
         .group_by(Vote.post_id)
         .all()
     )
     # agg is list of tuples: (post_id, score)
-    score_map = {row.post_id: int(row.score) for row in agg}
+    vote_map = {
+        row.post_id: {
+            "score": int(row.score),
+            "upvotes": int(row.upvotes),
+            "downvotes": int(row.downvotes),
+        }
+        for row in agg
+    }
 
     # 3) attach computed score to each Post instance (so response uses up-to-date values)
     for p in posts:
-        # if no votes found, default to 0
-        p.score = score_map.get(p.id, 0)
+        v = vote_map.get(p.id, {"score": 0, "upvotes": 0, "downvotes": 0})
+        p.score = v["score"]
+        p.upvotes = v["upvotes"]
+        p.downvotes = v["downvotes"]
 
     return posts
 

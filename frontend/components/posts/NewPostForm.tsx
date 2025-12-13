@@ -1,3 +1,4 @@
+// src/components/NewPostForm.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
@@ -50,6 +51,7 @@ export default function NewPostForm() {
     try {
       await createPost(content.trim(), deviceHash);
       setContent("");
+      // navigate to feed or refresh — using push to go to feed route
       router.push("/feed");
     } catch (err: any) {
       console.error(err);

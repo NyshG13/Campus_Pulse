@@ -29,7 +29,7 @@ def get_application() -> FastAPI:
     )
 
     app.include_router(posts.router, prefix=settings.API_V1_STR)
-    app.include_router(votes.router, prefix=settings.API_V1_STR)
+    app.include_router(votes.router)
 
     return app
 

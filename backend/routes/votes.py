@@ -14,17 +14,19 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from typing import Generator
 
 from backend.database.session import SessionLocal
 from backend.database.models.user import User
 from backend.database.models.post import Post
 from backend.database.models.vote import Vote
-from backend.schemas.vote import VoteCreate, VoteOut
+from backend.schemas.vote import VoteCreate  # pydantic input schema
 
-router = APIRouter(prefix="/votes", tags=["votes"])
+router = APIRouter(prefix="/api/v1/votes", tags=["votes"])
 
 
-def get_db():
+def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db
@@ -43,8 +45,14 @@ def get_or_create_user(db: Session, device_hash: str) -> User:
     return user
 
 
-@router.post("/", response_model=VoteOut)
+@router.post("/", response_model=dict)
 def cast_vote(payload: VoteCreate, db: Session = Depends(get_db)):
+    """
+    Create or update a vote for a post by an anonymous device (device_hash).
+    Returns aggregated totals for the post:
+    { post_id, votes, upvotes, downvotes }
+    """
+
     if payload.value not in (1, -1):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -64,25 +72,37 @@ def cast_vote(payload: VoteCreate, db: Session = Depends(get_db)):
     )
 
     if existing_vote:
-        # If same vote again, remove vote; else switch vote
         if existing_vote.value == payload.value:
-            post.score -= existing_vote.value
-            db.delete(existing_vote)
+            # no change — ensure post is fresh
+            db.refresh(post)
         else:
-            post.score -= existing_vote.value
+            delta = payload.value - existing_vote.value
             existing_vote.value = payload.value
-            post.score += payload.value
+            if hasattr(post, "score"):
+                post.score = (post.score or 0) + delta
+            db.add(existing_vote)
+            db.add(post)
+            db.commit()
+            db.refresh(post)
+            db.refresh(existing_vote)
+    else:
+        vote = Vote(post_id=payload.post_id, user_id=user.id, value=payload.value)
+        if hasattr(post, "score"):
+            post.score = (post.score or 0) + payload.value
+        db.add(vote)
+        db.add(post)
         db.commit()
         db.refresh(post)
-        db.refresh(existing_vote)
-        return existing_vote
+        db.refresh(vote)
 
-    # New vote
-    vote = Vote(post_id=payload.post_id, user_id=user.id, value=payload.value)
-    post.score += payload.value
+    # compute aggregates from Vote table (authoritative)
+    total_score = db.query(func.coalesce(func.sum(Vote.value), 0)).filter(Vote.post_id == payload.post_id).scalar() or 0
+    upvotes = db.query(func.count()).filter(Vote.post_id == payload.post_id, Vote.value == 1).scalar() or 0
+    downvotes = db.query(func.count()).filter(Vote.post_id == payload.post_id, Vote.value == -1).scalar() or 0
 
-    db.add(vote)
-    db.commit()
-    db.refresh(post)
-    db.refresh(vote)
-    return vote
+    return {
+        "post_id": payload.post_id,
+        "votes": int(total_score),
+        "upvotes": int(upvotes),
+        "downvotes": int(downvotes),
+    }

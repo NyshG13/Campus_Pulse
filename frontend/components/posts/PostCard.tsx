@@ -1,19 +1,18 @@
+// src/components/PostCard.tsx
 "use client";
 
-import type { Post } from "@/lib/types";
-import { upvotePost, downvotePost } from "@/lib/api";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { Post } from "@/lib/types";
+import { upvotePost, downvotePost, VoteResult } from "@/lib/api";
 
-interface Props {
-  post: Post;
-}
-
+/**
+ * Returns a stable device hash stored in localStorage.
+ */
 function getDeviceHash(): string {
   try {
     const key = "device_hash";
     let h = localStorage.getItem(key) ?? "";
-
     if (!h) {
       if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
         h = (crypto as any).randomUUID();
@@ -30,40 +29,77 @@ function getDeviceHash(): string {
   }
 }
 
+interface Props {
+  post: Post;
+}
+
 export default function PostCard({ post }: Props) {
   const [isPending, setIsPending] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [clientFormattedDate, setClientFormattedDate] = useState<string | null>(null);
+
+  const [upvotes, setUpvotes] = useState<number>(post.upvotes ?? 0);
+  const [downvotes, setDownvotes] = useState<number>(post.downvotes ?? 0);
+
   const router = useRouter();
 
-  // Format date only on client after mount to avoid SSR/CSR mismatch
   useEffect(() => {
     try {
       const dt = new Date(post.created_at);
-      // Use user's locale formatting on client
       setClientFormattedDate(dt.toLocaleString());
-    } catch (e) {
-      // fallback
+    } catch {
       setClientFormattedDate(post.created_at);
     }
   }, [post.created_at]);
 
-  const handleVote = async (type: "up" | "down") => {
+  useEffect(() => {
+    setUpvotes(post.upvotes ?? 0);
+    setDownvotes(post.downvotes ?? 0);
+  }, [post.upvotes, post.downvotes]);
+
+  const handleVote = async (e: React.MouseEvent, type: "up" | "down") => {
+    e.stopPropagation();
     setErrMsg(null);
+
+    if (isPending) {
+      console.warn("Vote already pending");
+      return;
+    }
     setIsPending(true);
+
     const deviceHash = getDeviceHash();
 
+    // optimistic update
+    if (type === "up") setUpvotes((v) => v + 1);
+    else setDownvotes((v) => v + 1);
+
     try {
+      let result: VoteResult | null = null;
       if (type === "up") {
-        await upvotePost(post.id, deviceHash);
+        result = await upvotePost(post.id, deviceHash);
       } else {
-        await downvotePost(post.id, deviceHash);
+        result = await downvotePost(post.id, deviceHash);
       }
-      // re-fetch server data
-      router.refresh();
-    } catch (e: any) {
-      console.error("vote error", e);
-      setErrMsg("Vote failed. Try again.");
+
+      console.log("vote result:", result);
+
+      // reconcile with server authoritative counts if present
+      if (result) {
+        if (typeof result.upvotes === "number") setUpvotes(result.upvotes);
+        if (typeof result.downvotes === "number") setDownvotes(result.downvotes);
+      } else {
+        console.warn("Vote endpoint returned no body");
+      }
+    } catch (err: any) {
+      console.error("vote error details:", err);
+      // show the actual message we got from apiFetch (which includes status + body)
+      setErrMsg(`Vote failed: ${err?.message ?? "unknown error"}`);
+      // fallback: refresh to get authoritative state
+      try {
+        router.refresh();
+      } catch (refreshErr) {
+        console.warn("router.refresh failed", refreshErr);
+      }
     } finally {
       setIsPending(false);
     }
@@ -76,6 +112,8 @@ export default function PostCard({ post }: Props) {
       ? "text-rose-400"
       : "text-slate-400";
 
+  const score = (upvotes || 0) - (downvotes || 0);
+
   return (
     <article className="border border-slate-800 rounded-2xl p-4 space-y-2">
       <p className="text-sm whitespace-pre-wrap">{post.content}</p>
@@ -84,10 +122,7 @@ export default function PostCard({ post }: Props) {
         <span className={sentimentColor}>Sentiment: {post.sentiment}</span>
 
         <span>
-          Score: {post.upvotes ?? 0} · Posted{" "}
-          {/* Render clientFormattedDate only after mount to avoid hydration mismatch.
-              Show a short placeholder like '—' until client formats it. */}
-          {clientFormattedDate ?? "—"}
+          Score: {score} · Posted {clientFormattedDate ?? "—"}
         </span>
       </div>
 
@@ -95,18 +130,18 @@ export default function PostCard({ post }: Props) {
 
       <div className="flex gap-2 text-xs">
         <button
-          onClick={() => handleVote("up")}
+          onClick={(e) => handleVote(e, "up")}
           disabled={isPending}
           className="px-2 py-1 rounded-md border border-slate-700"
         >
-          ⬆ {post.upvotes ?? 0}
+          ⬆ {upvotes}
         </button>
         <button
-          onClick={() => handleVote("down")}
+          onClick={(e) => handleVote(e, "down")}
           disabled={isPending}
           className="px-2 py-1 rounded-md border border-slate-700"
         >
-          ⬇ {post.downvotes ?? 0}
+          ⬇ {downvotes}
         </button>
       </div>
     </article>

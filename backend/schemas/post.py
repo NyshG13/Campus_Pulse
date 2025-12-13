@@ -20,6 +20,8 @@ class PostOut(BaseModel):
     content: str
     created_at: datetime
     score: int
+    upvotes : int
+    downvotes : int
     sentiment_score: float | None = None
     sentiment_label: str | None = None
 
