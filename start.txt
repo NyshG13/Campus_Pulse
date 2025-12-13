@@ -1,2 +1,4 @@
 frontend - npm run dev  (from cd frontend)
 backend - uvicorn backend.main:app --reload  (from root)
+
+to build the frontend package - npx create-next-app@latest

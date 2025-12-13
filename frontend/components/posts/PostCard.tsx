@@ -1,4 +1,12 @@
-// src/components/PostCard.tsx
+// this is how/what each post would look/contain 
+// Displays one post’s:
+// text
+// sentiment
+// timestamp
+// upvotes/downvotes
+// vote buttons
+// score
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -6,9 +14,7 @@ import { useRouter } from "next/navigation";
 import type { Post } from "@/lib/types";
 import { upvotePost, downvotePost, VoteResult } from "@/lib/api";
 
-/**
- * Returns a stable device hash stored in localStorage.
- */
+
 function getDeviceHash(): string {
   try {
     const key = "device_hash";
@@ -33,6 +39,7 @@ interface Props {
   post: Post;
 }
 
+//this displays - created_at, content, upvote, downvote, sentiment, score of votes + css
 export default function PostCard({ post }: Props) {
   const [isPending, setIsPending] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -115,7 +122,10 @@ export default function PostCard({ post }: Props) {
   const score = (upvotes || 0) - (downvotes || 0);
 
   return (
-    <article className="border border-slate-800 rounded-2xl p-4 space-y-2">
+    <article className="rounded-2xl p-4 space-y-2 
+    bg-white/10 backdrop-blur-lg border border-white/20 
+    shadow-[0_0_20px_rgba(255,255,255,0.1)] transition hover:shadow-[0_0_35px_rgba(255,255,255,0.2)]">
+
       <p className="text-sm whitespace-pre-wrap">{post.content}</p>
 
       <div className="flex justify-between items-center text-xs text-slate-400">
@@ -132,14 +142,18 @@ export default function PostCard({ post }: Props) {
         <button
           onClick={(e) => handleVote(e, "up")}
           disabled={isPending}
-          className="px-2 py-1 rounded-md border border-slate-700"
+          className="px-2 py-1 rounded-md border border-green-400 text-green-300 
+            hover:bg-green-500/20 hover:scale-110 transition-transform duration-200"
+
         >
           ⬆ {upvotes}
         </button>
         <button
           onClick={(e) => handleVote(e, "down")}
           disabled={isPending}
-          className="px-2 py-1 rounded-md border border-slate-700"
+          className="px-2 py-1 rounded-md border border-red-400 text-red-300 
+            hover:bg-red-500/20 hover:scale-110 transition-transform duration-200"
+
         >
           ⬇ {downvotes}
         </button>

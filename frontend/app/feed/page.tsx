@@ -9,8 +9,10 @@ export default async function FeedPage() {
   return (
     <section className="mt-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Campus Feed</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-sharetech)" }}>
+          Campus Feed
+        </h1>
+        <p className="text-slate-400 text-sm" style={{ fontFamily: "var(--font-sharetech)"}}>
           Most recent anonymous posts with sentiment.
         </p>
       </div>

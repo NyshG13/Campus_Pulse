@@ -1,14 +1,21 @@
-// src/components/NewPostForm.tsx
+// this is the form users fill why creating a post 
+//Responsibilities:
+// Holds a textarea
+// Contains a submit button
+// Calls backend API (createPost())
+// Clears input after submission
+// Shows loading/errors if any
+// Calls router.refresh() after creating a post
+
 "use client";
 
 import { useState, FormEvent } from "react";
 import { createPost } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
-/**
- * Returns a stable device hash stored in localStorage.
- * Safely handles environments without localStorage or crypto.randomUUID.
- */
+//creates a device hash for each user, which helps the backend rememeber each user without even a login, it doesnt collect info it gives random id to each device 
+//when u perform a function, say upvote, the backend gets a request : await upvotePost(post.id, deviceHash);
+//it check the db to see if this device hash exists, if it does it updates, if it doesnt it creates a new row 
 function getDeviceHash(): string {
   try {
     const key = "device_hash";
@@ -33,6 +40,7 @@ function getDeviceHash(): string {
   }
 }
 
+//these are the details or the form users see
 export default function NewPostForm() {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -65,6 +73,7 @@ export default function NewPostForm() {
     }
   };
 
+  //this is the css part
   return (
     <form onSubmit={onSubmit} className="space-y-3">
       <textarea

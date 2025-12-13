@@ -1,4 +1,4 @@
-// frontend/components/posts/PostList.tsx
+// the ui concerned with a list of posts 
 import type { Post } from "@/lib/types";
 import PostCard from "./PostCard";
 

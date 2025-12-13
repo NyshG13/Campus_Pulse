@@ -1,12 +1,21 @@
 // src/lib/api.ts
+//this makes the http request, adds the base url, sends and receives json and sees the errors 
+//it contains the path of 1st the whole backend url and secondly the api for the backend call for each function
+//each wrapper function is a gateway that every api request has to pass through 
+//Without it, every component would have fetch code like:
+
+// fetch("http://localhost:8000/api/v1/posts", {
+//   method: "POST",
+//   headers: { "Content-Type": "application/json" },
+//   body: JSON.stringify(...), });
+
+//this function automatically attaches backend url everywhere,so now u just call - apiFetch("/posts")
+
+
+
 import { API_BASE_URL } from "./config";
 import type { Post } from "./types";
 
-/**
- * Generic fetch wrapper for your API.
- * - Reads raw response body, attempts to parse JSON.
- * - On non-OK, throws an Error that contains status + body (helps debugging).
- */
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
