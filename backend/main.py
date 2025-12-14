@@ -17,6 +17,7 @@ def get_application() -> FastAPI:
 
     origins = [
     "http://localhost:3000",
+    "http://10.61.18.95:3000",
     "http://127.0.0.1:3000",
     ]
 

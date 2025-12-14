@@ -113,9 +113,9 @@ export default function PostCard({ post }: Props) {
   };
 
   const sentimentColor =
-    post.sentiment === "positive"
+    post.sentiment_label === "positive"
       ? "text-emerald-400"
-      : post.sentiment === "negative"
+      : post.sentiment_label === "negative"
       ? "text-rose-400"
       : "text-slate-400";
 
@@ -129,7 +129,7 @@ export default function PostCard({ post }: Props) {
       <p className="text-sm whitespace-pre-wrap">{post.content}</p>
 
       <div className="flex justify-between items-center text-xs text-slate-400">
-        <span className={sentimentColor}>Sentiment: {post.sentiment}</span>
+        <span className={sentimentColor}>Sentiment: {post.sentiment_label}</span>
 
         <span>
           Score: {score} · Posted {clientFormattedDate ?? "—"}

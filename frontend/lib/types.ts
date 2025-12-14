@@ -3,7 +3,7 @@
 //your components should recieve the correct data in the correct fields. 
 //how shd the data from frontend be strutcured for it to go to backend with the correct structure 
 
-export type Sentiment = "positive" | "neutral" | "negative";
+// export type Sentiment = "positive" | "neutral" | "negative";
 
 export interface Post {
   id: string;
@@ -11,7 +11,8 @@ export interface Post {
   created_at: string; // ISO string
   upvotes: number;
   downvotes: number;
-  sentiment: Sentiment;
+  sentiment_label?: "positive" | "negative" | "neutral";
+  sentiment_score?: number;
 }
 
 export interface TrendingTopic {

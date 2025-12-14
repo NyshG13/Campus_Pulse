@@ -21,3 +21,4 @@ def analyze_text(text: str) -> tuple[str, float]:
         label = "neutral"
 
     return label, compound
+

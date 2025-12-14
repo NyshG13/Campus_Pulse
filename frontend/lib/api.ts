@@ -15,6 +15,8 @@
 
 import { API_BASE_URL } from "./config";
 import type { Post } from "./types";
+console.log("API_BASE_URL =", API_BASE_URL);
+
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
